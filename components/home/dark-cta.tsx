@@ -18,7 +18,7 @@ export function DarkCta() {
         </p>
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
-            href="/signin"
+            href="/landing"
             className="rounded-full bg-[#FF5F40] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#E04A2A]"
           >
             Order Now

@@ -70,7 +70,7 @@ export function MenuItemCard({ item }: { item: MenuItemView }) {
           disabled={!item.isAvailable}
           onClick={() => {
             if (!session?.user) {
-              router.push("/signin");
+              router.push("/landing");
               return;
             }
             addItem({ itemId: item._id, name: item.name, price: item.price, quantity: 1, imageUrl: item.imageUrl });

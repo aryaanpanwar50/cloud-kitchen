@@ -2,15 +2,17 @@ import { NextResponse } from "next/server";
 import type { NextAuthRequest } from "next-auth";
 import { auth } from "@/auth";
 
-const protectedRoutes = ["/kitchen", "/admin"];
+const publicRoutes = ["/landing", "/signin", "/auth/signin"];
 
 export default auth((req: NextAuthRequest) => {
   const pathname = req.nextUrl.pathname;
 
-  if (protectedRoutes.some((route) => pathname.startsWith(route))) {
-    if (!req.auth?.user) {
-      return NextResponse.redirect(new URL("/auth/signin", req.nextUrl));
-    }
+  if (publicRoutes.some((route) => pathname === route || pathname.startsWith(`${route}/`))) {
+    return NextResponse.next();
+  }
+
+  if (!req.auth?.user) {
+    return NextResponse.redirect(new URL("/landing", req.nextUrl));
   }
 
   return NextResponse.next();

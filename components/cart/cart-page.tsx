@@ -33,6 +33,15 @@ async function ensureRazorpayScript() {
   });
 }
 
+type CheckoutValues = {
+  firstName: string;
+  lastName: string;
+  deliveryAddress: string;
+  customerPhone: string;
+};
+
+const checkoutStorageKey = "cloud-kitchen-checkout";
+
 export function CartPage() {
   const router = useRouter();
   const { data: session } = useSession();
@@ -44,24 +53,42 @@ export function CartPage() {
     [lines, settings?.deliveryFee],
   );
 
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [form, setForm] = useState<AddressFormValues>(() => {
-    if (typeof window === "undefined") return { deliveryAddress: "" };
-    const stored = window.localStorage.getItem("cloud-kitchen-address");
-    if (!stored) return { deliveryAddress: "" };
-    try { return JSON.parse(stored) as AddressFormValues; }
-    catch { window.localStorage.removeItem("cloud-kitchen-address"); return { deliveryAddress: "" }; }
+  const [checkout] = useState<CheckoutValues>(() => {
+    if (typeof window === "undefined") {
+      return { firstName: "", lastName: "", deliveryAddress: "", customerPhone: "" };
+    }
+    const stored = window.localStorage.getItem(checkoutStorageKey);
+    if (!stored) {
+      return { firstName: "", lastName: "", deliveryAddress: "", customerPhone: "" };
+    }
+    try {
+      const parsed = JSON.parse(stored) as Partial<CheckoutValues>;
+      return {
+        firstName: parsed.firstName ?? "",
+        lastName: parsed.lastName ?? "",
+        deliveryAddress: parsed.deliveryAddress ?? "",
+        customerPhone: parsed.customerPhone ?? "",
+      };
+    } catch {
+      window.localStorage.removeItem(checkoutStorageKey);
+      return { firstName: "", lastName: "", deliveryAddress: "", customerPhone: "" };
+    }
   });
-  const [customerPhone, setCustomerPhone] = useState("");
+  const [form, setForm] = useState<AddressFormValues>({ deliveryAddress: checkout.deliveryAddress });
+  const [firstName, setFirstName] = useState(checkout.firstName);
+  const [lastName, setLastName] = useState(checkout.lastName);
+  const [customerPhone, setCustomerPhone] = useState(checkout.customerPhone);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    window.localStorage.setItem("cloud-kitchen-address", JSON.stringify(form));
-  }, [form]);
+    window.localStorage.setItem(
+      checkoutStorageKey,
+      JSON.stringify({ firstName, lastName, deliveryAddress: form.deliveryAddress, customerPhone }),
+    );
+  }, [firstName, lastName, form.deliveryAddress, customerPhone]);
 
   async function createKitchenOrder(paymentId?: string) {
-    if (!session?.user?.email) { router.push("/signin"); return; }
+    if (!session?.user?.email) { router.push("/landing"); return; }
     const orderNumber = await createOrder({
       customerId: session.user.appUserId,
       customerEmail: session.user.email,
@@ -84,10 +111,11 @@ export function CartPage() {
 
   async function handlePlaceOrder(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!session?.user) { router.push("/signin"); return; }
+    if (!session?.user) { router.push("/landing"); return; }
     if (!lines.length) { toast.error("Your cart is empty"); return; }
     if (!form.deliveryAddress) { toast.error("Enter your delivery address"); return; }
     if (settings?.kitchenOpen === false) { toast.error("We are currently closed"); return; }
+    const contact = customerPhone.replace(/[^\d+]/g, "").trim();
     setSubmitting(true);
     try {
       const loaded = await ensureRazorpayScript();
@@ -106,6 +134,9 @@ export function CartPage() {
         name: settings?.kitchenName ?? envDefaults.kitchenName,
         description: "Cloud kitchen order",
         order_id: orderPayload.id,
+        method: {
+          upi: true,
+        },
         handler: async (response: Record<string, string>) => {
           const verifyResponse = await fetch("/api/razorpay/verify", {
             method: "POST",
@@ -117,7 +148,7 @@ export function CartPage() {
           await createKitchenOrder(response.razorpay_payment_id);
         },
         modal: { ondismiss: () => toast.error("Payment window dismissed") },
-        prefill: { name: session.user.name ?? "", email: session.user.email ?? "", contact: customerPhone },
+        prefill: { name: session.user.name ?? "", email: session.user.email ?? "", contact },
       });
       razorpay.open();
     } catch (error) {
@@ -185,6 +216,8 @@ export function CartPage() {
                 value={customerPhone}
                 onChange={e => setCustomerPhone(e.target.value)}
                 placeholder="+91 98765 43210"
+                inputMode="tel"
+                autoComplete="tel"
                 required
                 className="w-full rounded-2xl bg-[#F9F9F7] px-5 py-4 text-sm text-[#1A1A1A] outline-none transition focus:bg-[#F0EDE8]"
               />

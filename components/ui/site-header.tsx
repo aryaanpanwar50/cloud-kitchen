@@ -57,7 +57,7 @@ export function SiteHeader() {
                 {session.user.name?.split(" ")[0]}
               </span>
               <button
-                onClick={() => signOut({ callbackUrl: "/" })}
+                onClick={() => signOut({ callbackUrl: "/landing" })}
                 className="rounded-full border border-[#FF5F40] px-4 py-1.5 text-sm font-semibold text-[#FF5F40] transition hover:bg-[#FF5F40] hover:text-white"
               >
                 Sign out
@@ -66,13 +66,13 @@ export function SiteHeader() {
           ) : (
             <>
               <Link
-                href="/signin"
+                href="/landing"
                 className="hidden rounded-full border border-[#FF5F40] px-4 py-1.5 text-sm font-semibold text-[#FF5F40] transition hover:bg-[#FF5F40]/10 sm:inline-block"
               >
                 Contact Us
               </Link>
               <Link
-                href="/signin"
+                href="/landing"
                 className="rounded-full bg-[#FF5F40] px-4 py-1.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#E04A2A]"
               >
                 Order Now
