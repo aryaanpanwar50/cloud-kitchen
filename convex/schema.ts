@@ -2,6 +2,19 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  carts: defineTable({
+    customerId: v.string(),
+    items: v.array(
+      v.object({
+        itemId: v.string(),
+        name: v.string(),
+        price: v.number(),
+        quantity: v.number(),
+        imageUrl: v.optional(v.string()),
+      }),
+    ),
+    updatedAt: v.number(),
+  }).index("by_customer_id", ["customerId"]),
   orders: defineTable({
     orderNumber: v.string(),
     customerId: v.optional(v.string()),

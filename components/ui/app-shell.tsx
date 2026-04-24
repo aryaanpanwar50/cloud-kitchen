@@ -97,7 +97,7 @@ export function AppShell({ children, title, subtitle, fullHeight }: AppShellProp
             </div>
           ) : (
             <Link
-              href="/signin"
+              href="/landing"
               className="hidden rounded-full bg-[#FF5F40] px-5 py-2 text-sm font-bold text-white transition hover:bg-[#E04A2A] md:block"
             >
               Sign In
@@ -150,7 +150,7 @@ export function AppShell({ children, title, subtitle, fullHeight }: AppShellProp
               </button>
             ) : (
               <Link
-                href="/signin"
+                href="/landing"
                 onClick={() => setMobileMenuOpen(false)}
                 className="mt-2 flex w-full justify-center rounded-full bg-[#FF5F40] px-4 py-3 text-sm font-bold text-white"
               >

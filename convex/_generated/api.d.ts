@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as carts from "../carts.js";
 import type * as menu from "../menu.js";
 import type * as orders from "../orders.js";
 import type * as seed from "../seed.js";
@@ -21,6 +22,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  carts: typeof carts;
   menu: typeof menu;
   orders: typeof orders;
   seed: typeof seed;
